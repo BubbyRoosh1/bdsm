@@ -16,9 +16,9 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 
 [[package]]
 name = "rargsxd"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "059aab69ce92156b6ef33d9c8bf634af0598aefc682ea085deb65d535200e1f5"
+checksum = "0152a6f559cf340b427587ade9ff596f16b11a852a2a899e9caf020c00d8def5"
 
 [[package]]
 name = "yaml-rust"
