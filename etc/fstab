@@ -1,0 +1,2 @@
+/dev/sda1	/boot/efi	vfat	defaults	0 0
+/dev/sda2	none	swap	defaults	0 0

@@ -1,0 +1,22 @@
+hostname: alpine
+
+users:
+  bubbyroosh:
+    shell: /bin/mksh
+    perms: Sudo:bubbyroosh ALL=(ALL) ALL
+  uwu:
+    shell: /bin/uwu
+    perms: Doas:permit nopass uwu as root
+
+fstab:
+  /dev/sda1:
+    mountpoint: /boot/efi
+    format: vfat
+    rules: defaults
+    dump: 0 0
+
+  /dev/sda2:
+    mountpoint: none
+    format: swap
+    rules: defaults
+    dump: 0 0
