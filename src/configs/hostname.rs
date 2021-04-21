@@ -22,6 +22,7 @@ impl config::EtcConf for HostnameConf {
     }
 
     fn write(&self) -> Result<(), Box<dyn Error>> {
+        println!("Setting hostname...");
         write("etc/hostname", &self.hostname)?;
         Ok(())
     }

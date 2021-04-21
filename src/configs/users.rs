@@ -1,5 +1,5 @@
 use super::*;
-use std::fs::OpenOptions;
+use std::fs::{OpenOptions, read_to_string};
 use std::io::prelude::*;
 use std::process::Command;
 
@@ -40,29 +40,33 @@ impl config::EtcConf for UsersConf {
     fn parse(&mut self, yaml: Yaml) -> Result<(), Box<dyn Error>> {
         if let Yaml::Hash(hash) = yaml {
             for user in hash {
-                let mut user_conf = UserConf::new();
+                let mut conf = UserConf::new();
                 if let Yaml::String(s) = user.0 {
-                    user_conf.name = s;
+                    conf.name = s;
                 }
-                if let Yaml::Hash(hash) = user.1 {
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("shell".to_string())) {
-                        user_conf.shell = s.to_string();
-                    }
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("perms".to_string())) {
-                        user_conf.perms = s.to_string();
-                    }
-                }
-                self.users.push(user_conf);
+                get_yaml(&mut conf.shell, &user.1, "shell");
+                get_yaml(&mut conf.perms, &user.1, "perms");
+                self.users.push(conf);
             }
         }
         Ok(())
     }
 
     fn write(&self) -> Result<(), Box<dyn Error>> {
+        println!("Adding users...");
         for user in self.users.clone() {
+            let mut skip = false;
+            let passwd = read_to_string("/etc/passwd")?;
+            for line in passwd.lines() {
+                let name = line.split(":").nth(0).unwrap();
+                if user.name == name {skip = true}
+            }
+            if skip {continue}
+
+            println!("Adding user {}", user.name);
+
             // FIXME: Proper stuff for this that isn't std::process::Command. Only works with
             // busybox cause busybox uses adduser.
-            println!("Adding user {}", user.name);
             Command::new("adduser")
                 .arg(user.name)
                 .spawn()?
@@ -71,6 +75,7 @@ impl config::EtcConf for UsersConf {
             let mut iter = user.perms.split(":");
             let perm_file = if iter.nth(0).unwrap() == "Sudo" {"etc/sudoers"} else {"etc/doas.conf"};
             let perm_string = iter.nth(0).unwrap();
+
             let mut file = OpenOptions::new()
                 .append(true)
                 .open(perm_file)?;

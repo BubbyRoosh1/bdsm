@@ -47,38 +47,29 @@ impl config::EtcConf for FSTabConf {
     fn parse(&mut self, yaml: Yaml) -> Result<(), Box<dyn Error>> {
         if let Yaml::Hash(hash) = yaml {
             for drive in hash {
-                let mut drive_conf = DriveConf::new();
+                let mut conf = DriveConf::new();
                 if let Yaml::String(s) = drive.0 {
-                    drive_conf.dev = s;
+                    conf.dev = s;
                 }
-                if let Yaml::Hash(hash) = drive.1 {
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("mountpoint".to_string())) {
-                        drive_conf.mountpoint = s.to_string();
-                    }
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("format".to_string())) {
-                        drive_conf.format = s.to_string();
-                    }
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("rules".to_string())) {
-                        drive_conf.rules = s.to_string();
-                    }
-                    if let Some(Yaml::String(s)) = hash.get(&Yaml::String("dump".to_string())) {
-                        drive_conf.dump = s.to_string();
-                    }
-                }
-                self.drives.push(drive_conf);
+                get_yaml(&mut conf.mountpoint, &drive.1, "mountpoint");
+                get_yaml(&mut conf.format, &drive.1, "format");
+                get_yaml(&mut conf.rules, &drive.1, "rules");
+                get_yaml(&mut conf.dump, &drive.1, "dump");
+                self.drives.push(conf);
             }
         }
         Ok(())
     }
 
     fn write(&self) -> Result<(), Box<dyn Error>> {
+        println!("Populating fstab...");
         let mut contents = String::new();
         for drive in self.drives.iter() {
             if drive.check() {
-                contents.push_str(&format!("{}\t{}\t{}\t{}\t{}\n", 
-                    drive.dev, 
-                    drive.mountpoint, 
-                    drive.format, 
+                contents.push_str(&format!("{}\t{}\t{}\t{}\t{}\n",
+                    drive.dev,
+                    drive.mountpoint,
+                    drive.format,
                     drive.rules,
                     drive.dump
                 ));
